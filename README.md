@@ -1,0 +1,1 @@
+这个仓库存放实现图形学算法的代码，但由于没有封装，代码凌乱冗长。Shaders里存放这各个算法的HLSL，d3d12practicelast.cpp存放DX12的代码
