@@ -1,0 +1,298 @@
+struct vertexin
+{
+
+float4 position : POSITION;
+float2 uv : TEXCOORD;
+float3 noraml : NORMAL;
+float3 tangentU : TANGENT;
+#ifdef SKINNED
+ float4 boneweights : WEIGHTS;
+    uint4 boneindex : BONEINDICES;
+
+#endif
+
+};
+struct vertexout
+{
+    float4 positionH : SV_POSITION;
+    float3 positionW : POSITIONT;
+    float2 uv : TEXCOORD;
+    float3 normal : NORMAL;
+    float3 tanegntU : TANGENT;
+    float4 positionL : POSITIONT1;
+};
+Texture2D g_tex : register(t0);
+Texture2D g_nmap : register(t1);
+TextureCube g_skycube1 : register(t2);
+Texture2D g_smap : register(t3);
+SamplerState g_sampler : register(s0);
+int Xplus(float alpha)
+{
+    if (alpha > 0)
+        return 1;
+    else
+        return 0;
+}
+float Blinn_PhongNDF(float r, float3 n, float3 h)
+{
+    float alpha = 2 * pow(r, -2) - 2;
+    return ((alpha + 2) * (pow(max(dot(h, n), 0), alpha)) / (2 * 3.1415926));
+
+}
+float GGX(float alpha, float3 n, float3 h)
+{
+    return (pow(alpha, 2) * Xplus(dot(h, n))) / (3.1415926 * pow(dot(h, n), 4)) * pow((pow(alpha, 2) + pow(tan(acos(dot(h, n))), 2)), 2);
+
+}
+cbuffer passcb : register(b0)
+{
+    float4x4 MWVP;
+    float3 eyepos;
+    float pad1;
+    float3 AL;
+    float pad2;
+    float3 BL;
+    float m;
+    float3 lightdir;
+    float pad3;
+    float4 md;
+    float3 r0;
+    float pad4;
+    float4x4 V;
+    float4x4 W;
+    float4x4 VP;
+    float4x4 WinvT;
+    float4x4 P;
+    float4x4 S;
+    float3 lightPos;
+    float pad5;
+    float4x4 smuvmat;
+    float randnum[200];
+  
+}
+
+cbuffer objcb : register(b1)
+{
+    float4x4 world;
+    float4x4 worldinvT;
+}
+cbuffer modelmats : register(b2)
+{
+    float4x4 finalmats[58];
+}
+static const float sm_dx = 1.0f / 2048.0f;
+static const float sm_dy = 1.0f / 2048.0f;
+vertexout VS(vertexin pin)
+{
+    vertexout pout;
+   
+  
+    float4 Position = pin.position;
+    #ifdef SKINNED
+    
+    Position = (pin.boneweights.x * mul(Position, finalmats[pin.boneindex.x]))
+    + (pin.boneweights.y * mul(Position, finalmats[pin.boneindex.y])) +
+    pin.boneweights.z * mul(Position, finalmats[pin.boneindex.z]) + pin.boneweights.w * mul(Position, finalmats[pin.boneindex.w]);
+
+#endif
+    Position /= Position.w;
+    pout.positionW = mul( Position, world).xyz;
+    float4x4 MVP = mul(world, VP);
+    float4 posmvp = mul(Position, MVP);
+    pout.positionH = posmvp;
+    pout.uv = pin.uv;
+    pout.normal = pin.noraml;
+    pout.tanegntU = pin.tangentU;
+    pout.positionL = mul(float4(pout.positionW, 1.0f), S);
+    return pout;
+}
+float calct(float3 postocenter, float3 specularDir, float r)
+{
+    float tx, ty, tz;
+    float disx = r - abs(postocenter.x);
+    if (postocenter.x > 0)
+    {
+        if (specularDir.x > 0)
+            tx = abs(disx / specularDir.x);
+        if (specularDir.x < 0)
+            tx = abs((abs(postocenter.x) + r) / abs(specularDir.x));
+
+    }
+    if (postocenter.x < 0)
+    {
+        if (specularDir.x > 0)
+            tx = abs(abs(postocenter.x) + r / specularDir.x);
+        if (specularDir.x < 0)
+            tx = abs((disx) / abs(specularDir.x));
+    }
+    float disy = r - abs(postocenter.y);
+    if (postocenter.y > 0)
+    {
+        if (specularDir.y > 0)
+            ty = abs(disy / specularDir.y);
+        if (specularDir.y < 0)
+            ty = abs((abs(postocenter.y) + r) / abs(specularDir.y));
+
+    }
+    if (postocenter.y < 0)
+    {
+        if (specularDir.y > 0)
+            ty = abs(abs(postocenter.y) + r / specularDir.y);
+        if (specularDir.y < 0)
+            ty = abs((disy) / abs(specularDir.y));
+    }
+    float disz = r - abs(postocenter.z);
+    if (postocenter.z > 0)
+    {
+        if (specularDir.z > 0)
+            tz = abs(disz / specularDir.z);
+        if (specularDir.z < 0)
+            tz = abs((abs(postocenter.z) + r) / abs(specularDir.z));
+
+    }
+    if (postocenter.z < 0)
+    {
+        if (specularDir.z > 0)
+            tz = abs(abs(postocenter.z) + r / specularDir.z);
+        if (specularDir.z < 0)
+            tz = abs((disz) / abs(specularDir.z));
+    }
+    return min(min(tx, tz), ty);
+
+}
+float calcShadowFactor(float lightWidth, float dis, float2 smuv)//pcss的硬算版，坐等vssm
+{
+    float occdepth = 0;
+    int numocc = 0;
+    for (int i = -1; i <= 1; i++)
+    {
+        for (int j = -1; j <= 1; j++)
+        {
+            float depth = (g_smap.Sample(g_sampler, smuv + float2(sm_dx * i, sm_dy * j)).r);
+            if (dis > depth)
+            {
+                occdepth += depth;
+                numocc++;
+            }
+        }
+    }
+    float avoccdepth = occdepth / numocc;
+    float coresize = 0;
+ 
+    coresize = lightWidth * ((dis - avoccdepth) / avoccdepth) + 1;
+    
+    int convCore = coresize;
+    if (convCore > 2)
+        convCore = 2; //大于4就崩，最多3，还是得加速
+    if (convCore <= 0)
+        convCore = 0;
+    float shadowfactor = 0;
+    
+    for (int k = -1 * convCore; k <= convCore; k++)
+    {
+        for (int l = -1 * convCore; l <= 1 * convCore; l++)
+        {
+            float depth = (g_smap.Sample(g_sampler, smuv + float2(sm_dx * k, sm_dy * l)).r);
+            shadowfactor += (dis > depth + 0.005f);
+
+        }
+
+    }
+    shadowfactor /= (convCore * 2 + 1) * (convCore * 2 + 1);
+    return (1.0f - shadowfactor +0.7f) / 2.0f;
+}
+
+float calcShadowFactorVssm(int coresize, float dis, float2 smuv)//pcf的加速
+{
+    float sum = 0;
+    float sum2 = 0;
+    for (int i = 0; i <= 30; i++)
+    {
+        int dx = int(randnum[i * 4] * 6.0f);
+        int dy = int(randnum[i * 4 + 1] * 6.0f);
+        float sample = g_smap.Sample(g_sampler, smuv + float2(dx * sm_dx, dy * sm_dy));
+        int dx2 = int(randnum[i * 4 + 2] * 6.0f);
+        int dy2 = int(randnum[i * 4 + 3] * 6.0f);
+        float sample2 = g_smap.Sample(g_sampler, smuv + float2(dx2 * sm_dx, dy2 * sm_dy));
+        sum += sample;
+        sum2 += (sample2 * sample2);
+    }
+    float Ex = (sum / 30.0f)*100.0f;
+    float Ex2 = (sum2 / 30.0f)*100.0f;
+    float Dx = abs(Ex2 - Ex * Ex);//理应是个负数
+    return (Dx / (Dx + (pow(dis - Ex, 2))));//这有问题
+ 
+    //float sum = 0;
+    //for (int i = 0; i < 99; i++)
+    //{
+    //    sum += abs(randnum[i]);
+
+    //}
+    //return sum;
+}
+float4 PS(vertexout pin) : SV_Target
+{
+//#ifdef SKINNED
+//    return float4(20.0f,20.0f,20.0f,1.0f);
+//    #endif
+    float2 smuv = mul(pin.positionL, smuvmat).xy;
+    float dis = pin.positionL.z; //在同一空间比较，都在NDC
+ 
+   // float shadowfactor = calcShadowFactor(10.0f, dis, smuv);
+   // float shadowfactor = calcShadowFactorVssm(10, dis, smuv);
+  
+    float smx = frac(smuv.x * 1024.0f);
+    float smy = frac(smuv.y * 768.0f);
+    float results[4];
+    for (int i = 0; i < 2; i++)
+    {
+        for (int j = 0; j < 2; j++)
+            results[i * 2 + j] = (dis < g_smap.Sample(g_sampler, smuv + float2(sm_dx * i, sm_dy * j)).r + 0.05);
+
+    }
+    float shadowfactor;
+    for (int k = 0; k < 4; k++)
+    {
+        shadowfactor += results[k];
+    }
+    shadowfactor /= 4;
+   
+    shadowfactor = (shadowfactor + 1) / 2.0f;
+    pin.normal = normalize(pin.normal);
+    pin.tanegntU = normalize(pin.tanegntU);
+    float3 normalW = normalize(mul(float4(pin.normal, 0.0f), worldinvT).xyz); //法线在坐标变化后得归一化
+    float3 B = normalize(cross(normalW, pin.tanegntU));
+    float3x3 TBN = float3x3(pin.tanegntU, B, normalW);
+    float3 bumpednormal = normalize(((g_nmap.Sample(g_sampler, pin.uv).xyz)) * 2.0f - 1.0f); //-1到1的法线
+    float3 bumpednormalW = normalize(mul(bumpednormal, TBN));
+    float3 toeye = normalize(eyepos - pin.positionW); //必须得在世界坐标进行
+    float4 texcolor = g_tex.Sample(g_sampler, pin.uv);
+    float3 speculousdirnor = normalize(float3(normalW.x - toeye.x, normalW.y - toeye.y, normalW.z - toeye.z));
+    //float t = max(max(abs((200.0f - pin.positionW.x) /
+    //speculousdirnor.x), abs((200.0f - pin.positionW.y) /
+    //speculousdirnor.y)),
+    //abs((200.0f - pin.positionW.z) /
+    //speculousdirnor.z));
+    float t = calct(pin.positionW - eyepos, speculousdirnor, 200.0f);
+    float3 speculousdir = t * speculousdirnor;
+   // float3 r = reflect(-toeye, normalW);
+    float3 r = -1.0f * toeye - (2 * dot(-1.0f * toeye, normalW)) * normalW;
+   // float4 speculouscolor = g_skycube1.Sample(g_sampler, normalize(float3(pin.positionW - eyepos) + speculousdir));
+    float4 speculouscolor = g_skycube1.Sample(g_sampler, r);
+    float3 kd = texcolor.xyz / 255.0f; //kd其实就是吸收率
+    float finel = 0.5f; //模拟菲涅尔项,事实上这个值会根据观察角度以及入射方向改变
+    float3 lightdirnor = normalize(lightdir);
+    float3 h = normalize(toeye + lightdirnor); //半程向量
+    float3 al = speculouscolor.xyz * shadowfactor; //环境光
+    float decfactor = max(0, dot(normalize(lightdir), bumpednormalW)); //朗播余弦
+   
+    float3 diffuse = BL * kd * decfactor * (1 - finel) * shadowfactor;
+   // float roughfactor = pow(max(0, dot(h, bumpednormalW)), 256);//事实不应该是这样，因为光线经过多次多次反射又会反射到观察方向所以会有能量损失并且自遮挡项也没有，总体一定能量不守恒
+    float roughfactor = Blinn_PhongNDF(0.1f, h, bumpednormalW);
+  //  float roughfactor = GGX(20.0f, bumpednormalW, h)
+    float3 speculous = (finel *
+    BL * roughfactor) / (dot(h, lightdirnor) * dot(h, toeye)) * shadowfactor;
+    float3 retlit = speculous + diffuse+al ; //镜面的法线分布更集中，al实际应该是很多点光源的speculous+diffuse，由于假设材质对于光的吸收很均匀也就是无色，NDF很瘦，所以就被抽象为某个方向采样的颜色
+    return float4(retlit, 255.0f); //微表面的BRDF=diffuse+specular（包括多次反射后的结果）；
+   
+}

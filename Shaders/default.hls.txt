@@ -1,0 +1,86 @@
+
+struct vertexin
+{
+    float4 position : POSITION;
+    float2 uv : TEXCOORD;
+    float3 noraml:NORMAL;
+    float3 tangentU : TANGENT;
+};
+struct vertexout
+{
+    float4 positionH : SV_POSITION;
+    float3 positionW : POSITIONT;
+    float2 uv : TEXCOORD;
+    float3 normal : NORMAL;
+    float3 tanegntU : TANGENT;
+};
+Texture2D g_tex : register(t0);
+Texture2D g_nmap : register(t1);
+
+SamplerState g_sampler : register(s0);
+int Xplus(float alpha)
+{
+    if(alpha>0)
+        return 1;
+    else
+        return 0;
+}
+float GGX(float alpha, float3 n, float3 h)
+{
+    return (pow(alpha, 2) * Xplus(dot(h, n))) / (3.1415926 * pow(dot(h, n), 4)) * pow(  (pow(alpha, 2) + pow(tan(acos(dot(h, n))), 2)),2);
+
+}
+cbuffer passcb : register(b0)
+{
+    float4x4 MWVP;
+    float3 eyepos;
+    float pad1;
+    float3 AL;
+    float pad2;
+    float3 BL;
+    float m;
+    float3 lightdir;
+    float pad3;
+    float4 md;
+    float3 r0;
+    float pad4;
+    float4x4 V;
+    float4x4 W;
+    float4x4 VP;
+    float4x4 WinvT;
+}
+vertexout VS(vertexin pin)
+{
+    vertexout pout;
+    pout.positionW = mul(pin.position, W).xyz;
+    float4 posmvp = mul(pin.position, MWVP);
+    pout.positionH =posmvp;
+    pout.uv = pin.uv;
+    pout.normal = pin.noraml;
+    pout.tanegntU = pin.tangentU;
+    return pout;
+}
+float4 PS(vertexout pin):SV_Target
+{
+    pin.normal = normalize(pin.normal);
+    pin.tanegntU = normalize(pin.tanegntU);
+    float3 normalW = normalize(mul(float4(pin.normal, 0.0f), WinvT).xyz); //法线在坐标变化后得归一化
+    float3 B = normalize(cross(normalW, pin.tanegntU));
+    float3x3 TBN = float3x3(pin.tanegntU, B, normalW);
+    float3 bumpednormal = normalize(((g_nmap.Sample(g_sampler, pin.uv).xyz)) * 2.0f - 1.0f); //-1到1的法线
+    float3 bumpednormalW = normalize(mul(bumpednormal, TBN));
+    float4 texcolor= g_tex.Sample(g_sampler, pin.uv);
+    float3 kd = texcolor.xyz / 255.0f;//kd其实就是吸收率
+    float3 toeye =normalize (eyepos - pin.positionW);//必须得在世界坐标进行
+    float3 lightdirnor = normalize(lightdir);
+    float3 h = normalize( toeye + lightdirnor); //半程向量
+    float3 al = AL * kd;//环境光
+    float decfactor = max(0, dot(normalize(lightdir), bumpednormalW)); //朗播余弦
+    float3 diffuse = BL * kd * decfactor;
+  //  float roughfactor = pow(max(0, dot(h, bumpednormalW)), 256);
+    float roughfactor = GGX(20.0f, bumpednormalW, h);
+    float3 speculous = BL *roughfactor*0.01f ;
+    float3 retlit =  al+diffuse+ speculous;
+    return float4(retlit,1.0f);
+   
+}

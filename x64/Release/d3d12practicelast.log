@@ -1,0 +1,66 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(503,5): warning MSB8004: Output 目录未以斜杠结尾。  此生成实例将添加斜杠，因为必须有这个斜杠才能正确计算 Output 目录。
+  d3d12practice.cpp
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\modelReader.h(17,20): warning C4018: “<”: 有符号/无符号不匹配
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\modelReader.h(15,9): warning C4101: “a”: 未引用的局部变量
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\modelReader.h(42,20): warning C4018: “<”: 有符号/无符号不匹配
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\modelReader.h(62,20): warning C4018: “<”: 有符号/无符号不匹配
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\modelReader.h(70,20): warning C4018: “<”: 有符号/无符号不匹配
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\modelReader.h(82,20): warning C4018: “<”: 有符号/无符号不匹配
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\modelReader.h(91,20): warning C4018: “<”: 有符号/无符号不匹配
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\modelReader.h(96,21): warning C4018: “<”: 有符号/无符号不匹配
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(13,1): warning C4005: “GRS_WND_CLASS_NAME”: 宏重定义
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3dUtil.h(60,1): message : 参见“GRS_WND_CLASS_NAME”的前一个定义
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(14,1): warning C4005: “GRS_WND_TITLE”: 宏重定义
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3dUtil.h(61,1): message : 参见“GRS_WND_TITLE”的前一个定义
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(195,21): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(196,21): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(215,25): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(216,25): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(964,79): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1281,117): warning C4267: “参数”: 从“size_t”转换到“DWORD”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1287,84): warning C4267: “参数”: 从“size_t”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1288,20): warning C4244: “=”: 从“UINT64”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1318,125): warning C4267: “参数”: 从“size_t”转换到“DWORD”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1419,92): warning C4267: “参数”: 从“size_t”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1420,28): warning C4244: “=”: 从“UINT64”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1426,125): warning C4267: “参数”: 从“size_t”转换到“DWORD”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1442,77): warning C4267: “参数”: 从“size_t”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1486,37): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1594,86): warning C4267: “参数”: 从“size_t”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1604,79): warning C4267: “参数”: 从“size_t”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1614,78): warning C4267: “参数”: 从“size_t”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1623,86): warning C4267: “参数”: 从“size_t”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1635,92): warning C4267: “参数”: 从“size_t”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1636,28): warning C4244: “=”: 从“UINT64”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1736,22): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1834,78): warning C4267: “参数”: 从“size_t”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1846,92): warning C4267: “参数”: 从“size_t”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1848,28): warning C4244: “=”: 从“UINT64”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1870,86): warning C4267: “参数”: 从“size_t”转换到“DWORD”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(232,15): warning C4101: “hInst”: 未引用的局部变量
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(233,11): warning C4101: “szTitle”: 未引用的局部变量
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(234,11): warning C4101: “szWindowClass”: 未引用的局部变量
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(295,29): warning C4101: “sphereibv”: 未引用的局部变量
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(298,29): warning C4101: “skyibv”: 未引用的局部变量
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(297,30): warning C4101: “skyvbv”: 未引用的局部变量
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(294,29): warning C4101: “ibv”: 未引用的局部变量
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(296,30): warning C4101: “spherevbv”: 未引用的局部变量
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(261,10): warning C4101: “nSamplerDescriptorSize”: 未引用的局部变量
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1743,23): warning C4101: “front”: 未引用的局部变量
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(1975,86): warning C4267: “参数”: 从“size_t”转换到“DWORD”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(2014,77): warning C4267: “初始化”: 从“size_t”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(2015,77): warning C4267: “初始化”: 从“size_t”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(2360,85): warning C4267: “参数”: 从“size_t”转换到“UINT”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(2405,86): warning C4267: “参数”: 从“size_t”转换到“DWORD”，可能丢失数据
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practice.cpp(2392,20): warning C4101: “objc”: 未引用的局部变量
+  d3dUtil.cpp
+  DDSTextureLoader.cpp
+  MathHelper.cpp
+  textureLoader.cpp
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\textureLoader.cpp(214,19): warning C4018: “<”: 有符号/无符号不匹配
+  正在生成代码
+  Previous IPDB not found, fall back to full compilation.
+C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3dUtil.h(142): warning C4715: “boneAnimation::interpolation”: 不是所有的控件路径都返回值
+  All 1821 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  已完成代码的生成
+  d3d12practicelast.vcxproj -> C:\mytinyrenderproj\d3d12practicelast\d3d12practicelast\d3d12practicelast.exe

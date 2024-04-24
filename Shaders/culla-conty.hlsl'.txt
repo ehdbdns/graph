@@ -1,0 +1,169 @@
+struct vertexin
+{
+
+    float3 position : POSITION;
+
+
+};
+struct vertexout
+{
+    float4 positionH : SV_POSITION;
+    float3 positionW : POSITIONT;
+    float2 uv : TEXCOORD;
+    float3 normal : NORMAL;
+    float3 tanegntU : TANGENT;
+    float4 positionL : POSITIONT1;
+};
+Texture2D g_tex : register(t0);
+Texture2D g_nmap : register(t1);
+TextureCube g_skycube1 : register(t2);
+Texture2D g_smap : register(t3);
+SamplerState g_sampler : register(s0);
+int Xplus(float alpha)
+{
+    if (alpha > 0)
+        return 1;
+    else
+        return 0;
+}
+float Blinn_PhongNDF(float r, float3 n, float3 h)
+{
+    
+    float alpha = 2 * pow(r, -2) - 2;
+    return ((alpha + 2) * (pow(max(dot(h, n), 0), alpha)) / (2 * 3.1415926));
+
+}
+float GGX(float3 alpha, float3 n, float3 h)
+{
+    alpha = alpha * alpha;
+    return (pow(alpha, 2) * Xplus(dot(h, n))) / (3.1415926f * pow((1 + pow(dot(n, h), 2) * (alpha * alpha - 1)), 2));
+
+}
+float3 SchlickFresnel(float3 F0, float3 n, float3 h)
+{
+    return F0 + (1 - F0) * pow((1 - max(0, dot(n, h))), 5);
+    
+
+}
+float3 smooth_SurfaceDiff(float3 F0, float3 albedo, float3 n, float3 l, float Dotnv)
+{
+    float k = (21 / (20 * 3.1415926));
+    float3 base1 = (1 - pow(1 - max(0, dot(n, l)), 5));
+    float3 base2 = (1 - pow(1 - max(0, Dotnv), 5));
+    return k * (1 - F0) * base1 * base2 * albedo;
+
+}
+float lambda(float alpha)
+{
+    return (-1 + pow((1 + 1 / (abs(dot(alpha, alpha)))), 0.5)) / 2;
+
+}
+float smithG2(float3 h, float3 l, float3 n, float roughness, float Dotnv, float Dothv)
+{
+    float a1 = dot(n, l) / (roughness * (pow((1 - pow(dot(n, l), 2)), 0.5)));
+    float a2 = Dotnv / (roughness * (pow((1 - pow(Dotnv, 2)), 0.5)));
+    float3 base1 = 1 + lambda(a1) + lambda(a2);
+    float3 base2 = Xplus(Dothv) * Xplus(dot(h, l));
+    return base2 / base1;
+
+}
+
+
+cbuffer passcb : register(b0)
+{
+    float4x4 MWVP;
+    float3 eyepos;
+    float pad1;
+    float3 AL;
+    float pad2;
+    float3 BL;
+    float roughness;
+    float3 lightdir;
+    float pad3;
+    float4 md;
+    float3 r0;
+    float pad4;
+    float4x4 V;
+    float4x4 W;
+    float4x4 VP;
+    float4x4 WinvT;
+    float4x4 P;
+    float4x4 S;
+    float3 lightPos;
+    float pad5;
+    float4x4 smuvmat;
+    float randnum[4096];
+  
+}
+float3 aveEmu(float3 F0, float3 n, float3 h, float roughness)
+{
+    float3 outter = float3(0, 0, 0);
+    for (int i = 0; i < 1024; i++)
+    {
+        float muo = randnum[i + 3072];
+       
+
+        float3 inner = float3(0, 0, 0);
+        for (int j = 0; j < 1024; j++)
+        {
+            float lit1 = randnum[j * 3];
+            float lit2 = randnum[j * 3 + 1];
+            float lit3 = randnum[j * 3 + 2];
+            float3 lit = normalize(float3(lit1, lit2, lit3));
+            
+            inner += dot(lit, n) * SchlickFresnel(F0, n, h) * smithG2(h, lit, n, roughness, muo, dot(h, lit)) * GGX(roughness, n, h) / (4 * abs(dot(n, lit)) * abs(muo));
+
+        }
+        inner /= 1024;
+        outter += inner * muo * 2;
+    }
+    outter /= 1024;
+    return outter;
+
+}
+float3 Emu(float3 F0, float3 n, float roughness, float3 v)
+{
+    float3 inner = float3(0, 0, 0);
+    for (int j = 0; j < 1024; j++)
+    {
+        float lit1 = randnum[j * 3];
+        float lit2 = randnum[j * 3 + 1];
+        float lit3 = randnum[j * 3 + 2];
+        float3 lit = normalize(float3(lit1, lit2, lit3));
+        float3 h = normalize(lit + v);
+        inner += dot(lit, n) * SchlickFresnel(F0, n, h) * smithG2(h, lit, n, roughness, dot(n, v), dot(h, lit)) * GGX(roughness, n, h) / (4 * abs(dot(n, lit)) * abs(dot(n, v)));
+
+    }
+    inner /= 1024;
+    return inner;
+}
+
+cbuffer objcb : register(b1)
+{
+    float4x4 world;
+    float4x4 worldinvT;
+}
+cbuffer modelmats : register(b2)
+{
+    float4x4 finalmats[58];
+}
+static const float sm_dx = 1.0f / 2048.0f;
+static const float sm_dy = 1.0f / 2048.0f;
+vertexout VS(vertexin pin)
+{
+    vertexout pout;
+    pout.positionH = float4(pin.position, 1.0f);
+    pout.positionW = pin.position;
+    return pout;
+}
+float4 PS(vertexout pin) : SV_Target
+{
+    float mu = pin.positionW.x;
+    float sintheta = pow((1 - mu * mu), 0.5);
+    float3 v = float3(-sintheta, mu, 0);
+    float roughness = (pin.positionW.y + 1.0f) / 2.0f;
+    
+    //float3 emu = Emu(float3(1.0f, 1.0f, 1.0f), float3(0, 1.0f, 0), roughness, v);
+    //return float4(emu, 1.0f);
+    return float4(roughness, roughness , roughness, 1.0f);
+}

@@ -1,0 +1,130 @@
+
+struct vertexin
+{
+    float4 position : POSITION;
+    float2 uv : TEXCOORD;
+    float3 noraml : NORMAL;
+    float3 tangentU : TANGENT;
+};
+struct vertexout
+{
+    float4 positionH : SV_POSITION;
+    float3 positionW : POSITIONT;
+    float2 uv : TEXCOORD;
+    float3 normal : NORMAL;
+    float3 tanegntU : TANGENT;
+};
+Texture2D g_tex : register(t0);
+Texture2D g_nmap : register(t1);
+TextureCube g_skycube1 : register(t2);
+SamplerState g_sampler : register(s0);
+Texture3D clipmapsr : register(t19);
+Texture3D clipmapsr2 : register(t20);
+Texture3D clipmapsr3 : register(t21);
+Texture3D clipmapsr4 : register(t22);
+Texture3D clipmapsr5 : register(t23);
+Texture3D clipmapsr6 : register(t24);
+
+cbuffer passcb : register(b0)
+{
+    float4x4 MWVP;
+    float3 eyepos;
+    float pad1;
+    float3 AL;
+    float pad2;
+    float3 BL;
+    float m;
+    float3 lightdir;
+    float pad3;
+    float4 md;
+    float3 r0;
+    float pad4;
+    float4x4 V;
+    float4x4 W;
+    float4x4 VP;
+    float4x4 WinvT;
+    float4x4 P;
+    float4x4 S;
+}
+cbuffer objcb : register(b1)
+{
+    float4x4 world;
+    float4x4 worldinvT;
+}
+int4 getindex(float3 posW)
+{
+    float3 eyeToPos = posW ;
+    int level = 0;
+    float maxDis = max(max(abs(eyeToPos.x), abs(eyeToPos.y)), abs(eyeToPos.z));
+    maxDis /= 10;
+    while (maxDis-pow(2,level) > 0)
+    {
+        level++;
+        
+    }
+    int voxelSize = 5 * pow(2, level);
+    int3 index = floor(eyeToPos / voxelSize);
+    index += 2;
+    return int4(index, level);
+}
+
+vertexout VS(vertexin pin)
+{
+    vertexout vout;
+    float4 Position = float4(pin.position.xyz, 1.0f);
+    //float4 posW = mul(Position, world);
+    vout.positionH = mul(Position, VP);
+    vout.normal = pin.noraml;
+    vout.positionW = Position.xyz;
+    return vout;
+}
+float4 PS(vertexout pin):SV_Target
+{
+    float3 worldPOS = pin.positionW ;
+    int4 indexandlevel = getindex(worldPOS);
+    float3 uvw = float3(indexandlevel.xyz) + 0.5f;
+    float3 color = float3(0, 0, 0);
+    switch (indexandlevel.w)
+    {
+        case 0:
+        {
+                color = clipmapsr.Sample(g_sampler, uvw);
+                clip(color-0.1f);
+                return color;
+                break;
+            }
+        case 1:{
+                color = clipmapsr2.Sample(g_sampler, uvw);
+                clip(color - 0.1f);
+                return color;
+                break;
+            }
+        case 2:{
+                color = clipmapsr3.Sample(g_sampler, uvw);
+                clip(color - 0.1f);
+                return color;
+                break;
+            }
+        case 3:{
+                color = clipmapsr4.Sample(g_sampler, uvw);
+                clip(color - 0.1f);
+                return color;
+                break;
+            }
+        case 4:{
+                color = clipmapsr5.Sample(g_sampler, uvw);
+                clip(color - 0.1f);
+                return color;
+                break;
+            }
+        case 5:{
+                color = clipmapsr6.Sample(g_sampler, uvw);
+                clip(color - 0.1f);
+                return color;
+          
+                break;
+            }
+        
+    }
+    return float4(0.5, 0, 0, 0);
+}
